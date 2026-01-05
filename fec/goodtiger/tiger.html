@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TIGRINHO DO BEM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        /* ======= CONFIGURE AQUI SUA IMAGEM DE FUNDO =======
+          Tamanho recomendado: 1920x1080px (ou maior, paisagem)
+          Exemplo de imagem grátis: https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80
+        */
+        background: url("fundinho.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #fff;
+        font-family: "Segoe UI", Arial, sans-serif;
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden; /* Evita barra de rolagem horizontal em telas pequenas */
+      }
+
+      .container {
+        max-width: 1600px; /* ALTERAÇÃO: Aumenta ainda mais para acomodar painéis bem afastados */
+        margin: 40px auto;
+        background: rgba(30, 30, 30, 0.92);
+        border-radius: 28px;
+        box-shadow: 0 12px 48px 0 #000a, 0 0 0 8px #ffd70044;
+        padding: 36px 28px 28px 28px;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        display: none; /* Escondido por padrão, será exibido pelo JS */
+        overflow: visible; /* ALTERAÇÃO: Permite que painéis externos sejam visíveis */
+      }
+
+      h1 {
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 2.7rem;
+        letter-spacing: 2px;
+        margin-bottom: 18px;
+        color: #ffd700;
+        text-shadow: 0 4px 16px #000, 0 2px 0 #ff9800, 0 0 24px #ffd70099;
+        animation: pop 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67) infinite
+          alternate;
+      }
+      @keyframes pop {
+        from {
+          transform: scale(1);
+        }
+        to {
+          transform: scale(1.04);
+        }
+      }
+
+      .slot-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 22px;
+        margin: 36px 0 18px 0;
+        background: rgba(24, 24, 24, 0.98);
+        border-radius: 22px;
+        box-shadow: 0 0 32px #000a, 0 0 0 6px #ffd70055;
+        padding: 18px 0;
+        border: 3px solid #ffd700;
+        position: relative;
+        z-index: 1; /* Garante que a roleta fique por cima de outros elementos se necessário */
+      }
+      
+      /* ALTERAÇÃO: Linha vencedora no centro da roleta */
+      .slot-area::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, transparent 0%, #ffd700 20%, #ff9800 50%, #ffd700 80%, transparent 100%);
+        box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700aa;
+        border-radius: 2px;
+        z-index: 10;
+        animation: linhaBrilho 2s infinite alternate;
+      }
+      
+      @keyframes linhaBrilho {
+        from {
+          box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700aa;
+        }
+        to {
+          box-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700cc, 0 0 80px #ffd70088;
+        }
+      }
+      .slot-area::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 22px;
+        box-shadow: 0 0 60px 10px #ffd70044 inset;
+        pointer-events: none;
+      }
+
+      .slot-window {
+        width: 140px;
+        height: 420px;
+        background: linear-gradient(180deg, #222 80%, #ffd70022 100%);
+        border-radius: 18px;
+        box-shadow: 0 0 18px #000a, 0 0 0 3px #ffd700;
+        border: 4px solid #fff;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .slot-strip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        transition: top 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+      }
+
+      .slot-symbol {
+        width: 140px;
+        height: 140px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        color: #fff;
+        background: linear-gradient(135deg, #e74c3c 0%, #f1c40f 100%);
+        border-bottom: 2px solid #fff3;
+        box-shadow: 0 2px 8px #0003 inset, 0 0 0 4px #fff2 inset;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 6px #000a, 0 0 8px #ffd70099;
+        transition: box-shadow 0.2s;
+      }
+      .slot-symbol img {
+        max-width: 120px;
+        max-height: 120px;
+        margin-bottom: 4px;
+        display: block;
+        filter: drop-shadow(0 2px 4px #0008) drop-shadow(0 0 8px #ffd70088);
+        border-radius: 12px;
+        background: #fff2;
+        padding: 2px;
+      }
+
+      .game-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .game-buttons button {
+        background: linear-gradient(90deg, #ffd700 0%, #ff9800 100%);
+        color: #222;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 30px;
+        padding: 16px 48px;
+        cursor: pointer;
+        box-shadow: 4px 4px 24px #0008, 0 0 0 4px #ffd70055;
+        transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px #fff8;
+        width: 100%;
+        max-width: 300px;
+      }
+      .game-buttons button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: linear-gradient(90deg, #666 0%, #888 100%);
+        transform: none;
+        box-shadow: 2px 2px 12px rgba(0,0,0,0.2), 0 0 0 2px rgba(102,102,102,0.3);
+      }
+      .game-buttons button:hover:not(:disabled) {
+        background: linear-gradient(90deg, #ff9800 0%, #ffd700 100%);
+        transform: scale(1.06);
+        box-shadow: 0 8px 32px #ffd70088, 0 0 0 8px #ffd70033;
+      }
+
+      .result {
+        margin: 18px 0 28px 0;
+        font-size: 1.5rem;
+        color: #00e676;
+        min-height: 32px;
+        text-shadow: 0 2px 8px #000a, 0 0 12px #ffd70099;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        letter-spacing: 1px;
+      }
+
+      .linha-premiada {
+        box-shadow: 0 0 0 6px #ffd700, 0 0 32px #ffd700a0;
+        border-radius: 14px;
+        animation: brilho 1s infinite alternate;
+      }
+      @keyframes brilho {
+        from {
+          box-shadow: 0 0 0 6px #ffd700, 0 0 32px #ffd700a0;
+        }
+        to {
+          box-shadow: 0 0 0 12px #fff700, 0 0 60px #fff700c0;
+        }
+      }
+
+      .popup-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 20, 20, 0.75);
+        z-index: 1000;
+        animation: fadeIn 0.3s;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .popup-msg {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        z-index: 1001;
+        background: linear-gradient(135deg, #fffbe9 80%, #ffd700 100%);
+        border-radius: 32px;
+        box-shadow: 0 8px 64px #000a, 0 0 0 8px #ffd70055;
+        padding: 38px 48px 38px 38px;
+        min-width: 340px;
+        max-width: 90vw;
+        min-height: 180px;
+        animation: popupIn 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+      }
+      @keyframes popupIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.7);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      .popup-msg img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        box-shadow: 0 4px 24px #000a, 0 0 0 8px #ffd70055;
+        background: #fff;
+        object-fit: contain;
+        border: 4px solid #ffd700;
+        animation: mascoteBounce 1.2s infinite alternate;
+      }
+      @keyframes mascoteBounce {
+        from {
+          transform: translateY(0);
+        }
+        to {
+          transform: translateY(-14px);
+        }
+      }
+
+      .balao-fala {
+        background: #fffbe9;
+        color: #222;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 1.5rem;
+        border-radius: 22px;
+        box-shadow: 0 4px 24px #0004, 0 0 0 4px #ffd70033;
+        padding: 24px 32px;
+        position: relative;
+        text-align: left;
+        line-height: 1.3;
+        min-width: 220px;
+        max-width: 340px;
+        animation: falaPop 0.7s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+      }
+      @keyframes falaPop {
+        from {
+          opacity: 0;
+          transform: scale(0.7);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .balao-fala::after {
+        content: "";
+        position: absolute;
+        left: -28px;
+        bottom: 28px;
+        width: 0;
+        height: 0;
+        border-top: 22px solid transparent;
+        border-bottom: 22px solid transparent;
+        border-right: 28px solid #fffbe9;
+        filter: drop-shadow(-2px 2px 2px #ffd70044);
+      }
+
+      .popup-close {
+        position: absolute;
+        top: 18px;
+        right: 22px;
+        background: #ffd700;
+        color: #222;
+        border: none;
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        font-size: 2rem;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        cursor: pointer;
+        box-shadow: 0 2px 8px #0004;
+        transition: background 0.2s;
+        z-index: 10;
+      }
+      .popup-close:hover {
+        background: #ff9800;
+        color: #fff;
+      }
+
+      @media (max-width: 1000px) {
+        .container {
+          max-width: 90vw; /* ALTERAÇÃO: Em telas médias, reduz a largura máxima */
+        }
+        .slot-layout {
+          gap: 20px; /* ALTERAÇÃO: Reduz o gap em telas médias */
+        }
+        .slot-layout > div:nth-child(2) {
+          width: 100%; /* ALTERAÇÃO: Em telas médias, o painel central é responsivo */
+          max-width: 480px;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .container,
+        .slot-area {
+          max-width: 99vw;
+          width: 99vw;
+        }
+        .slot-area {
+          gap: 8px;
+        }
+        .slot-window {
+          width: 80px;
+          height: 240px;
+        }
+        .slot-symbol {
+          width: 80px;
+          height: 80px;
+        }
+        .slot-symbol img {
+          max-width: 70px;
+          max-height: 70px;
+        }
+        .popup-msg img {
+          width: 64px;
+          height: 64px;
+        }
+        .popup-msg {
+          padding: 18px 10px 18px 10px;
+          min-width: 0;
+        }
+        .balao-fala {
+          font-size: 1rem;
+          min-width: 90px;
+          padding: 10px 12px;
+        }
+        .balao-fala::after {
+          left: -12px;
+          border-top: 10px solid transparent;
+          border-bottom: 10px solid transparent;
+          border-right: 12px solid #fffbe9;
+        }
+        #back-arrow {
+          font-size: 3rem; /* Menor em telas pequenas */
+          left: 15px;
+          top: 15px;
+        }
+
+        /* ALTERAÇÃO: responsivo para layout lateral (info / roleta / ranking) */
+        .slot-layout {
+          flex-direction: column;
+          align-items: center;
+          gap: 20px; /* ALTERAÇÃO: Reduz o gap em telas menores */
+        }
+        .side-panel {
+          width: 100%;
+          max-width: 520px;
+        }
+        .slot-layout > div:nth-child(2) {
+          width: 100%; /* ALTERAÇÃO: Em telas menores, o painel central ocupa toda a largura */
+          max-width: 520px;
+        }
+      }
+
+      /* ==== Estilos das Novas Páginas (Intro, Créditos e Ranking) ==== */
+      .intro-page,
+      .credits-page,
+      .score-page {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 40px;
+        background: rgba(30, 30, 30, 0.92);
+        border-radius: 28px;
+        box-shadow: 0 12px 48px 0 #000a, 0 0 0 8px #ffd70044;
+        max-width: 480px;
+        width: 90%;
+        position: relative;
+        z-index: 2;
+      }
+      .intro-page h1,
+      .score-page h1 {
+        margin-bottom: 40px;
+      }
+
+      .intro-page button,
+      .credits-page button,
+      .score-page button {
+        background: linear-gradient(90deg, #ffd700 0%, #ff9800 100%);
+        color: #222;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 30px;
+        padding: 16px 48px;
+        margin: 10px 0;
+        cursor: pointer;
+        box-shadow: 4px 4px 24px #0008, 0 0 0 4px #ffd70055;
+        transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px #fff8;
+        width: 100%;
+        max-width: 300px;
+      }
+      .intro-page button:hover,
+      .credits-page button:hover,
+      .score-page button:hover {
+        background: linear-gradient(90deg, #ff9800 0%, #ffd700 100%);
+        transform: scale(1.06);
+        box-shadow: 0 8px 32px #ffd70088, 0 0 0 8px #ffd70033;
+      }
+
+      .credits-page {
+        max-width: 540px;
+      }
+      .credits-page h2 {
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        color: #ffd700;
+        text-shadow: 0 2px 8px #000a;
+        margin-bottom: 20px;
+      }
+      .credits-page p,
+      .score-page p {
+        font-size: 1.5rem; /* Um pouco maior */
+        line-height: 1.8;
+        margin: 8px 0;
+        color: #fff;
+        text-shadow: 0 2px 8px #000a, 0 0 12px #ffd700; /* Mais brilho */
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif; /* Mesma fonte do título */
+        letter-spacing: 1px;
+      }
+      .credits-page p.thanks {
+        margin-top: 40px; /* Mais espaçamento */
+        font-size: 1.8rem; /* Ainda maior */
+        font-weight: bold;
+        color: #222; /* Cor mais escura para contraste */
+        text-shadow: 0 2px 8px #fff8; /* Sombra branca */
+        background: linear-gradient(
+          135deg,
+          #ffd700 0%,
+          #ff9800 100%
+        ); /* Gradiente de dourado/laranja */
+        padding: 15px 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 24px #000a, 0 0 0 6px #fff70055; /* Sombra e borda mais acentuadas */
+        animation: pop 1s infinite alternate; /* Animação de "pulo" também na mensagem */
+      }
+
+      #back-arrow {
+        position: fixed;
+        top: 25px;
+        left: 25px;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 4rem;
+        color: #ffd700;
+        text-shadow: 0 4px 16px #000, 0 2px 0 #ff9800, 0 0 24px #ffd70099;
+        cursor: pointer;
+        z-index: 100;
+        animation: pop 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67) infinite
+          alternate;
+        display: none;
+        transition: transform 0.2s;
+      }
+      #back-arrow:hover {
+        transform: scale(1.1);
+      }
+
+      /* Estilos para o novo contador de jogadas */
+      /* ALTERAÇÃO: deixou de ser absoluto/por cima da roleta; agora vai numa lateral */
+      .game-info {
+        position: static; /* ALTERAÇÃO */
+        top: auto;
+        right: auto; /* ALTERAÇÃO */
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 1.2rem;
+        text-align: left; /* ALTERAÇÃO */
+      }
+
+      /* ======= ALTERAÇÃO: layout com painéis externos ======= */
+      .slot-layout {
+        /* ALTERAÇÃO */
+        display: flex;
+        align-items: flex-start;
+        justify-content: center; /* ALTERAÇÃO: Centraliza a roleta */
+        width: 100%;
+        max-width: 1600px; /* ALTERAÇÃO: Aumenta para acomodar painéis bem afastados */
+        position: relative; /* ALTERAÇÃO: Para posicionar painéis externos */
+      }
+      .side-panel {
+        /* ALTERAÇÃO */
+        background: rgba(30, 30, 30, 0.92);
+        border-radius: 20px;
+        box-shadow: 0 0 15px #000a, 0 0 0 4px #ffd70044;
+        padding: 20px 18px; /* ALTERAÇÃO: Aumentei o padding interno */
+        min-width: 180px;
+        flex-shrink: 0; /* ALTERAÇÃO: Impede que o painel encolha */
+        position: absolute; /* ALTERAÇÃO: Posiciona externamente */
+        top: 0;
+      }
+      
+      /* ALTERAÇÃO: Painel de usuário/jogadas no canto superior esquerdo */
+      .side-panel:first-child {
+        left: -450px; /* ALTERAÇÃO: Ainda mais afastado para nomes longos */
+        top: -50px; /* ALTERAÇÃO: Posiciona no canto superior */
+      }
+      
+      /* ALTERAÇÃO: Painel de ranking no canto superior direito */
+      .ranking-panel {
+        right: -450px; /* ALTERAÇÃO: Ainda mais afastado para nomes longos */
+        top: -50px; /* ALTERAÇÃO: Posiciona no canto superior */
+        max-width: 350px; /* ALTERAÇÃO: Largura maior para nomes longos */
+      }
+      .ranking-panel .title {
+        /* ALTERAÇÃO */
+        color: #ffd700;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        margin: 0 0 10px 0;
+        text-align: center;
+      }
+      .ranking-list {
+        /* ALTERAÇÃO */
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+      .ranking-item {
+        /* ALTERAÇÃO */
+        background: rgba(255, 215, 0, 0.15);
+        border-radius: 12px;
+        padding: 8px 10px;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 0.95rem;
+      }
+
+      /* ======= ALTERAÇÃO (popup de nome usando o mesmo estilo visual) ======= */
+      #name-overlay {
+        /* ALTERAÇÃO */
+        display: none;
+      }
+      #name-popup .balao-fala input {
+        /* ALTERAÇÃO */
+        width: 100%;
+        margin-top: 10px;
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: none;
+        font-size: 1rem;
+      }
+      #name-popup .balao-fala button {
+        /* ALTERAÇÃO */
+        background: linear-gradient(90deg, #ffd700 0%, #ff9800 100%);
+        color: #222;
+        font-family: "Luckiest Guy", cursive, Arial, sans-serif;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 14px;
+        padding: 10px 16px;
+        cursor: pointer;
+        box-shadow: 0 2px 12px #0006, 0 0 0 3px #ffd70055;
+      }
+      .slot-layout > div:nth-child(2) {
+        flex: 0 0 auto; /* ALTERAÇÃO: Não permite que o painel central cresça ou diminua */
+        width: 540px; /* ALTERAÇÃO: Largura fixa para o painel central */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* ALTERAÇÃO: Painel central agora fica completamente centralizado */
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="back-arrow" style="display: none">&#x2190;</div>
+
+    <div id="intro-page" class="intro-page">
+      <h1>TIGRINHO DO BEM</h1>
+      <button id="start-button">START GAME</button>
+      <button id="credits-button">CRÉDITOS</button>
+    </div>
+
+    <div id="game-container" class="container">
+      <h1>TIGRINHO DO BEM</h1>
+
+      <div class="slot-layout">
+        <aside class="side-panel">
+          <div class="game-info">
+            <p id="username-display"></p>
+            <p id="games-left"></p>
+          </div>
+        </aside>
+
+        <div style="flex: 0 1 auto; min-width: 360px">
+          <div class="slot-area" id="slot-area">
+            <div class="slot-window">
+              <div class="slot-strip" id="strip0"></div>
+            </div>
+            <div class="slot-window">
+              <div class="slot-strip" id="strip1"></div>
+            </div>
+            <div class="slot-window">
+              <div class="slot-strip" id="strip2"></div>
+            </div>
+          </div>
+
+          <div class="game-buttons">
+            <button id="spin-button">GIRAR!</button>
+          </div>
+
+          <div class="result" id="result"></div>
+
+          <p
+            style="
+              margin-top: 24px;
+              color: #ffd700;
+              font-size: 1.05rem;
+              font-family: 'Luckiest Guy', cursive, Arial, sans-serif;
+              text-shadow: 2px 2px 8px #000a;
+            "
+          >
+            <b>Obs:</b> Se alinhar 3 símbolos iguais na linha do meio, você
+            ganha!<br />
+          </p>
+        </div>
+
+        <aside class="side-panel ranking-panel">
+          <h3 class="title">RANKING</h3>
+          <ol id="ranking-list" class="ranking-list"></ol>
+        </aside>
+      </div>
+    </div>
+
+    <div id="credits-page" class="credits-page">
+      <h2>CRÉDITOS</h2>
+      <p>Murilo Bueno de Godoy</p>
+      <p>Júlia dos Santos Daniel</p>
+      <p>Márcio Aparecido Muniz Junior</p>
+      <p>Ana Clara Catelani</p>
+      <p class="thanks">
+        AGRADECEMOS MUITO por jogar e fazer parte da nossa jornada!
+      </p>
+      <button id="back-to-intro-button">VOLTAR</button>
+    </div>
+
+    <div id="score-page" class="score-page">
+      <h1>RESULTADO FINAL</h1>
+      <p id="final-username"></p>
+      <p id="final-score"></p>
+      <p id="final-rank"></p>
+      <button id="play-again-button">JOGAR NOVAMENTE</button>
+    </div>
+
+    <div id="popup-overlay" class="popup-overlay"></div>
+    <div id="popup-msg" class="popup-msg" style="display: none">
+      <img id="mascote-img" src="mascote.jpg" alt="Mascote" />
+      <div class="balao-fala" id="balao-fala"></div>
+      <!-- ALTERAÇÃO: Botão de fechar removido para forçar espera do tempo completo -->
+    </div>
+
+    <div id="name-overlay" class="popup-overlay"></div>
+    <div id="name-popup" class="popup-msg" style="display: none">
+      <img src="diego_ganhou.png" alt="Mascote" />
+      <div class="balao-fala">
+        <div>Digite seu nome para começar:</div>
+        <input id="name-input" type="text" placeholder="Seu nome" />
+        <button id="name-confirm">COMEÇAR</button>
+      </div>
+      <button class="popup-close" id="name-close" title="Fechar">
+        &times;
+      </button>
+    </div>
+    <script>
+             // ======= Defina aqui os símbolos do caça-níquel =======
+       const symbols = [
+         { img: "cj.jpg", label: "Mamaco" },
+         { img: "mclovin.jpg", label: "McLovin" },
+         { img: "sid.png", label: "Sid" },
+         { img: "caramelo.jpg", label: "Caramelo" },
+         { img: "felca.jpg", label: "Felca" },
+         { img: "tueh.jpg", label: "Tueh" },
+       ];
+
+      const mascoteWinImg = "diego_ganhou.png";
+      const mascoteLoseImg = "diego_perdeu.png";
+
+      // Parâmetros do slot
+      const ROWS = 3;
+      const COLS = 3;
+      const SYMBOLS_PER_STRIP = symbols.length;
+      const SYMBOL_HEIGHT = 140;
+      const SPIN_DURATION_BASE = 2000;
+      const SPIN_STOP_DELAY = 400;
+      const POPUP_DELAY = 1000;
+      const MAX_GAMES = 3;
+
+      // VARIÁVEIS DO NOVO SISTEMA DE USUÁRIO E RANKING
+      let currentUsername = "";
+      let gamesPlayed = 0;
+      let winsCount = 0;
+      
+      // ALTERAÇÃO: Variáveis de controle de estado para evitar bugs
+      let isTransitioning = false; // Controla transições entre páginas
+      let isModalOpen = false; // Controla se algum modal está aberto
+      let isGameActive = false; // Controla se o jogo está ativo
+
+      /* ======= ALTERAÇÃO: ranking persistente entre jogadores (na mesma sessão) ======= */
+      const ranking = []; // { name, wins, errors, rankText }  // ALTERAÇÃO
+
+      // Elementos do jogo
+      let strips = [[], [], []];
+      let positions = [0, 0, 0];
+      let spinning = false;
+
+      const stripEls = [
+        document.getElementById("strip0"),
+        document.getElementById("strip1"),
+        document.getElementById("strip2"),
+      ];
+      const spinBtn = document.getElementById("spin-button");
+      const resultDiv = document.getElementById("result");
+      const popup = document.getElementById("popup-msg");
+      const popupOverlay = document.getElementById("popup-overlay");
+      const fala = document.getElementById("balao-fala");
+      const popupClose = document.getElementById("popup-close");
+      const mascoteImg = document.getElementById("mascote-img");
+
+      // NOVOS ELEMENTOS DO PLACAR
+      const finalUsernameEl = document.getElementById("final-username");
+      const finalScoreEl = document.getElementById("final-score");
+      const finalRankEl = document.getElementById("final-rank");
+      const playAgainBtn = document.getElementById("play-again-button");
+      const usernameDisplayEl = document.getElementById("username-display");
+      const gamesLeftEl = document.getElementById("games-left");
+
+      /* ======= ALTERAÇÃO: ranking painel ======= */
+      const rankingListEl = document.getElementById("ranking-list"); // ALTERAÇÃO
+
+      // Elementos de navegação
+      const introPage = document.getElementById("intro-page");
+      const gameContainer = document.getElementById("game-container");
+      const creditsPage = document.getElementById("credits-page");
+      const scorePage = document.getElementById("score-page"); // NOVO
+      const startButton = document.getElementById("start-button");
+      const creditsButton = document.getElementById("credits-button");
+      const backToIntroButton = document.getElementById("back-to-intro-button");
+      const backArrow = document.getElementById("back-arrow");
+
+      /* ======= ALTERAÇÃO: popup de nome - elementos ======= */
+      const nameOverlay = document.getElementById("name-overlay"); // ALTERAÇÃO
+      const namePopup = document.getElementById("name-popup"); // ALTERAÇÃO
+      const nameInput = document.getElementById("name-input"); // ALTERAÇÃO
+      const nameConfirm = document.getElementById("name-confirm"); // ALTERAÇÃO
+      const nameClose = document.getElementById("name-close"); // ALTERAÇÃO
+
+      // Funções de navegação com validações
+      function showIntro() {
+        // ALTERAÇÃO: Validação para evitar transições durante operações críticas
+        if (isTransitioning || spinning) {
+          return;
+        }
+        
+        isTransitioning = true;
+        isGameActive = false;
+        
+        // ALTERAÇÃO: Fecha qualquer modal aberto antes de mudar de página
+        closeAllModals();
+        
+        introPage.style.display = "flex";
+        gameContainer.style.display = "none";
+        creditsPage.style.display = "none";
+        scorePage.style.display = "none";
+        backArrow.style.display = "none";
+        
+        // ALTERAÇÃO: Libera transições após um pequeno delay
+        setTimeout(() => {
+          isTransitioning = false;
+        }, 300);
+      }
+
+      function showGame() {
+        // ALTERAÇÃO: Validação para evitar transições durante operações críticas
+        if (isTransitioning) {
+          return;
+        }
+        
+        isTransitioning = true;
+        isGameActive = true;
+        
+        // ALTERAÇÃO: Fecha qualquer modal aberto antes de mudar de página
+        closeAllModals();
+        
+        introPage.style.display = "none";
+        gameContainer.style.display = "block";
+        creditsPage.style.display = "none";
+        scorePage.style.display = "none";
+        backArrow.style.display = "block";
+        updateGameInfo();
+        renderRanking(); /* ALTERAÇÃO: manter ranking visível */
+        
+        // ALTERAÇÃO: Libera transições após um pequeno delay
+        setTimeout(() => {
+          isTransitioning = false;
+        }, 300);
+      }
+
+      function showCredits() {
+        // ALTERAÇÃO: Validação para evitar transições durante operações críticas
+        if (isTransitioning) {
+          return;
+        }
+        
+        isTransitioning = true;
+        isGameActive = false;
+        
+        // ALTERAÇÃO: Fecha qualquer modal aberto antes de mudar de página
+        closeAllModals();
+        
+        introPage.style.display = "none";
+        gameContainer.style.display = "none";
+        creditsPage.style.display = "flex";
+        scorePage.style.display = "none";
+        backArrow.style.display = "none";
+        
+        // ALTERAÇÃO: Libera transições após um pequeno delay
+        setTimeout(() => {
+          isTransitioning = false;
+        }, 300);
+      }
+
+      function rankFromWins(w) {
+        // ALTERAÇÃO: mesma classificação do seu placar
+        if (w === 3) return "ROLETUDO";
+        if (w === 2) return "MESTRE DA ROLETA";
+        if (w === 1) return "ROLINHA";
+        return "GAROTO";
+      }
+
+      function showScoreboard() {
+        // ALTERAÇÃO: Validação para evitar transições durante operações críticas
+        if (isTransitioning) {
+          return;
+        }
+        
+        isTransitioning = true;
+        isGameActive = false;
+        
+        // ALTERAÇÃO: Fecha qualquer modal aberto antes de mudar de página
+        closeAllModals();
+        
+        gameContainer.style.display = "none";
+        scorePage.style.display = "flex";
+        backArrow.style.display = "none";
+
+        /* ======= ALTERAÇÃO: ao finalizar, registra no ranking ======= */
+        addCurrentPlayerToRanking(); // ALTERAÇÃO
+
+        const rankText = rankFromWins(winsCount);
+
+        finalUsernameEl.textContent = `Usuário: ${currentUsername}`;
+        finalScoreEl.textContent = `Acertos: ${winsCount} de ${MAX_GAMES}`;
+        finalRankEl.textContent = `Ranking: ${rankText}`;
+        
+        // ALTERAÇÃO: Libera transições após um pequeno delay
+        setTimeout(() => {
+          isTransitioning = false;
+        }, 300);
+      }
+
+      function updateGameInfo() {
+        usernameDisplayEl.textContent = `Usuário: ${currentUsername}`;
+        gamesLeftEl.textContent = `Jogadas: ${gamesPlayed} de ${MAX_GAMES}`;
+      }
+
+      // ALTERAÇÃO: Função para fechar todos os modais
+      function closeAllModals() {
+        isModalOpen = false;
+        nameOverlay.style.display = "none";
+        namePopup.style.display = "none";
+        popupOverlay.style.display = "none";
+        popup.style.display = "none";
+      }
+
+      // ======= ALTERAÇÃO: fluxo de nome via POPUP, sem prompt() =======
+      function openNamePopup() {
+        // ALTERAÇÃO: Validação para evitar abrir modal se já houver um aberto
+        if (isModalOpen || isTransitioning) {
+          return;
+        }
+        
+        isModalOpen = true;
+        nameInput.value = "";
+        nameOverlay.style.display = "block";
+        namePopup.style.display = "flex";
+        setTimeout(() => nameInput.focus(), 0);
+      }
+      function closeNamePopup() {
+        // ALTERAÇÃO
+        isModalOpen = false;
+        nameOverlay.style.display = "none";
+        namePopup.style.display = "none";
+      }
+      function confirmNameStart() {
+        // ALTERAÇÃO: Validações adicionais para o nome do usuário
+        const username = (nameInput.value || "").trim();
+        if (!username || username.length < 2 || username.length > 20) {
+          // ALTERAÇÃO: Mostra mensagem de erro se o nome for inválido
+          alert("Por favor, digite um nome válido (entre 2 e 20 caracteres).");
+          return;
+        }
+        
+        // ALTERAÇÃO: Verifica se o nome já existe no ranking
+        const existingPlayer = ranking.find(player => player.name.toLowerCase() === username.toLowerCase());
+        if (existingPlayer) {
+          const confirmReplace = confirm(`O usuário "${username}" já existe no ranking. Deseja continuar com este nome?`);
+          if (!confirmReplace) {
+            return;
+          }
+        }
+        
+        currentUsername = username;
+        gamesPlayed = 0;
+        winsCount = 0;
+        
+        // ALTERAÇÃO: Reseta o botão para um novo jogo
+        spinBtn.disabled = false;
+        spinBtn.textContent = "GIRAR!";
+        
+        closeNamePopup();
+        showGame();
+      }
+
+      // Inicializa as strips com símbolos aleatórios
+      function initStrips() {
+        for (let c = 0; c < COLS; c++) {
+          strips[c] = [];
+          for (let i = 0; i < SYMBOLS_PER_STRIP * 3; i++) {
+            strips[c].push(symbols[Math.floor(Math.random() * symbols.length)]);
+          }
+        }
+      }
+
+      // NOVA LÓGICA: Renderiza as strips com as cartas ganhadoras
+      function renderStrips() {
+        for (let c = 0; c < COLS; c++) {
+          stripEls[c].innerHTML = "";
+          for (let i = 0; i < strips[c].length; i++) {
+            let div = document.createElement("div");
+            div.className = "slot-symbol";
+            // NOVA LÓGICA: Linha premiada é a linha do meio (posição 10)
+            if (i === 10) div.className += " linha-premiada";
+            if (strips[c][i].img) {
+              let img = document.createElement("img");
+              img.src = strips[c][i].img;
+              img.alt = strips[c][i].label;
+              div.appendChild(img);
+            }
+            stripEls[c].appendChild(div);
+          }
+        }
+      }
+
+      // NOVA LÓGICA: Gira as colunas com animação visual e resultado pré-determinado
+      async function spinSlots() {
+        // ALTERAÇÃO: Validações adicionais para evitar bugs
+        if (spinning || gamesPlayed >= MAX_GAMES || isTransitioning || isModalOpen || !isGameActive || spinBtn.disabled) {
+          if (gamesPlayed >= MAX_GAMES) {
+            showScoreboard();
+          }
+          return;
+        }
+
+        spinning = true;
+        spinBtn.disabled = true;
+        resultDiv.textContent = "";
+
+        // NOVA LÓGICA: Sorteia as 3 cartas ganhadoras ANTES da animação
+        const winningCards = [
+          symbols[Math.floor(Math.random() * symbols.length)],
+          symbols[Math.floor(Math.random() * symbols.length)],
+          symbols[Math.floor(Math.random() * symbols.length)]
+        ];
+
+        // NOVA LÓGICA: Cria strips com animação visual
+        for (let c = 0; c < COLS; c++) {
+          // Cria uma strip com muitos símbolos para dar efeito de rolagem
+          let strip = [];
+          for (let i = 0; i < 20; i++) { // 20 símbolos para rolagem longa
+            strip.push(symbols[Math.floor(Math.random() * symbols.length)]);
+          }
+          // Coloca a carta ganhadora na posição final (linha do meio)
+          strip[10] = winningCards[c]; // Posição 10 = linha do meio
+          strips[c] = strip;
+        }
+        
+        // ALTERAÇÃO: Debug removido
+
+        // NOVA LÓGICA: Animação de rolagem visual
+        await animateSpinning();
+
+        // NOVA LÓGICA: Para na posição correta (linha do meio)
+        await stopAtWinningPosition();
+
+        spinning = false;
+
+        // INCREMENTA O NÚMERO DE JOGADAS
+        gamesPlayed++;
+        updateGameInfo();
+        
+        // ALTERAÇÃO: Se atingiu o máximo de jogadas, desabilita o botão permanentemente
+        if (gamesPlayed >= MAX_GAMES) {
+          spinBtn.disabled = true;
+          spinBtn.textContent = "JOGO FINALIZADO";
+        } else {
+          // ALTERAÇÃO: Só reabilita o botão se ainda não atingiu o máximo de jogadas
+          spinBtn.disabled = false;
+        }
+
+        setTimeout(() => {
+          checkResult(winningCards); // Passa as cartas ganhadoras
+        }, POPUP_DELAY);
+      }
+
+      // NOVA FUNÇÃO: Animação de rolagem rápida por 3 segundos
+      async function animateSpinning() {
+        return new Promise((resolve) => {
+          const totalDuration = 3000; // 3 segundos total
+          const startTime = Date.now();
+          
+          function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / totalDuration, 1);
+            
+            // Todas as colunas rolam juntas por 3 segundos com velocidade alta
+            for (let c = 0; c < COLS; c++) {
+              // Velocidade alta e constante durante os 3 segundos
+              const speed = 15; // Velocidade alta para início imediato
+              const offset = (elapsed / 20) * speed; // Offset baseado no tempo (mais rápido)
+              
+              stripEls[c].style.transform = `translateY(-${offset}px)`;
+              stripEls[c].style.transition = `none`;
+            }
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              resolve();
+            }
+          }
+          
+          animate();
+        });
+      }
+
+      // NOVA FUNÇÃO: Para uma coluna de cada vez de forma fluida
+      async function stopAtWinningPosition() {
+        return new Promise((resolve) => {
+          // Renderiza as strips com as cartas ganhadoras na linha do meio
+          renderStrips();
+          
+          // Para uma coluna de cada vez com intervalo de 400ms para ser mais fluido
+          for (let c = 0; c < COLS; c++) {
+            setTimeout(() => {
+              // Posição 10 é onde está a carta ganhadora, ajusta para mostrar na linha do meio
+              const targetPosition = 10 * SYMBOL_HEIGHT - (1 * SYMBOL_HEIGHT);
+              stripEls[c].style.transform = `translateY(-${targetPosition}px)`;
+              stripEls[c].style.transition = `transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+            }, c * 400); // 400ms de diferença entre cada coluna para ser mais fluido
+          }
+          
+          // Resolve após todas as colunas pararem (3 colunas * 400ms + 800ms de transição)
+          setTimeout(() => {
+            resolve();
+          }, (COLS * 400) + 800);
+        });
+      }
+
+      /* ======= NOVA LÓGICA: verifica resultado das cartas ganhadoras ======= */
+      function checkResult(winningCards) {
+        // NOVA LÓGICA: Usa as cartas ganhadoras diretamente
+        const resultCards = winningCards;
+
+        // NOVA LÓGICA: Verifica se as 3 cartas sorteadas são iguais
+        const isWin = resultCards[0].label === resultCards[1].label &&
+                     resultCards[1].label === resultCards[2].label;
+
+        if (isWin) {
+          winsCount++; // INCREMENTA AS VITÓRIAS
+          mascoteImg.src = mascoteWinImg;
+          fala.innerHTML = `Parabéns! <br>Você ganhou um prêmio!`;
+          resultDiv.textContent = "🏆 Você GANHOU! 🏆";
+        } else {
+          mascoteImg.src = mascoteLoseImg;
+          fala.innerHTML = `Não foi dessa vez!<br>Tente novamente!`;
+          resultDiv.textContent = "😔 Tente novamente... 😔";
+        }
+
+        // ALTERAÇÃO: Validação para evitar abrir modal se já houver um aberto
+        if (!isModalOpen && !isTransitioning) {
+          isModalOpen = true;
+          popupOverlay.style.display = "block";
+          popup.style.display = "flex";
+          
+          // ALTERAÇÃO: Mantém o botão desabilitado durante a exibição do modal
+          spinBtn.disabled = true;
+          
+          // ALTERAÇÃO: Modal bloqueado - usuário deve esperar o tempo completo
+          setTimeout(() => {
+            isModalOpen = false;
+            popupOverlay.style.display = "none";
+            popup.style.display = "none";
+            
+            // ALTERAÇÃO: Só reabilita o botão se ainda não atingiu o máximo de jogadas
+            if (gamesPlayed < MAX_GAMES) {
+              spinBtn.disabled = false;
+            }
+            
+            // Se atingir máximo de jogadas, mostra placar final
+            if (gamesPlayed >= MAX_GAMES) {
+              showScoreboard();
+            }
+          }, 4000); // ALTERAÇÃO: Aumentei para 4 segundos para dar mais tempo
+        }
+      }
+
+      // ======= ALTERAÇÃO: adiciona jogador atual ao ranking (sem duplicatas) =======
+      function addCurrentPlayerToRanking() {
+        // ALTERAÇÃO: Verifica se o usuário já existe no ranking
+        const existingPlayerIndex = ranking.findIndex(player => player.name === currentUsername);
+        
+        const entry = {
+          name: currentUsername,
+          wins: winsCount,
+          errors: MAX_GAMES - winsCount,
+          rankText: rankFromWins(winsCount),
+        };
+        
+        if (existingPlayerIndex !== -1) {
+          // ALTERAÇÃO: Se o usuário já existe, atualiza seus dados
+          ranking[existingPlayerIndex] = entry;
+        } else {
+          // ALTERAÇÃO: Se é um novo usuário, adiciona ao ranking
+          ranking.push(entry);
+        }
+        
+        renderRanking();
+      }
+
+      // ======= ALTERAÇÃO: renderiza ranking à direita =======
+      function renderRanking() {
+        // ALTERAÇÃO
+        rankingListEl.innerHTML = "";
+        // Ordena por vitórias desc, depois por menos erros
+        const ordered = [...ranking].sort(
+          (a, b) => b.wins - a.wins || a.errors - b.errors
+        );
+        ordered.forEach((p, i) => {
+          const li = document.createElement("li");
+          li.className = "ranking-item";
+          li.textContent = `${i + 1}º • ${p.name} — ${p.wins} acertos, ${
+            p.errors
+          } erros • ${p.rankText}`;
+          rankingListEl.appendChild(li);
+        });
+      }
+
+      // ALTERAÇÃO: Event listeners de fechar popup removidos para forçar espera do tempo completo
+
+      // ======= ALTERAÇÃO: listeners do popup de nome =======
+      startButton.onclick = openNamePopup; // ALTERAÇÃO (antes chamava prompt)
+      nameConfirm.onclick = confirmNameStart; // ALTERAÇÃO
+      nameClose.onclick = closeNamePopup; // ALTERAÇÃO
+      nameOverlay.onclick = closeNamePopup; // ALTERAÇÃO
+      nameInput.addEventListener("keydown", (e) => {
+        // ENTER confirma
+        if (e.key === "Enter") confirmNameStart();
+      }); // ALTERAÇÃO
+
+      // Event Listeners para os botões de navegação com validações
+      // startButton.onclick = startGameWithUsername; // (desativado) // ORIGINAL
+      creditsButton.onclick = function() {
+        if (!isTransitioning && !isModalOpen) {
+          showCredits();
+        }
+      };
+      backToIntroButton.onclick = function() {
+        if (!isTransitioning && !isModalOpen) {
+          showIntro();
+        }
+      };
+      backArrow.onclick = function() {
+        if (!isTransitioning && !isModalOpen) {
+          showIntro();
+        }
+      };
+      spinBtn.onclick = function() {
+        // ALTERAÇÃO: Validações mais rigorosas para evitar cliques múltiplos
+        if (!isTransitioning && !isModalOpen && isGameActive && !spinning && !spinBtn.disabled) {
+          spinSlots();
+        }
+      };
+      playAgainBtn.onclick = function() {
+        if (!isTransitioning && !isModalOpen) {
+          showIntro();
+        }
+      }; // NOVO
+      
+      // ALTERAÇÃO: Event listener do debug removido
+
+      // Inicialização
+      initStrips();
+      renderStrips();
+      showIntro();
+    </script>
+  </body>
+</html>
